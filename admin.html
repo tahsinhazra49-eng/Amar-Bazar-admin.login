@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>আমাদের বাজার - এডমিন প্যানেল</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hidden-modal { display: none !important; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans pb-24">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-extrabold flex items-center gap-2">
+                <i class="fas fa-user-shield"></i> এডমিন প্যানেল
+            </h1>
+            <button onclick="logoutAdmin()" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-red-600">
+                <i class="fas fa-sign-out-alt"></i> লগআউট
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto mt-6 px-4 space-y-8">
+        <!-- Tab Buttons -->
+        <div class="flex gap-2 border-b pb-3 overflow-x-auto items-center">
+            <button onclick="switchTab('products')" id="tabProductsBtn" class="px-5 py-2.5 rounded-xl font-bold bg-blue-600 text-white shadow-sm transition">প্রোডাক্ট ম্যানেজমেন্ট</button>
+            <button onclick="switchTab('orders')" id="tabOrdersBtn" class="px-5 py-2.5 rounded-xl font-bold bg-white text-gray-600 border shadow-sm transition">অর্ডার লিস্ট</button>
+            <button onclick="switchTab('banner')" id="tabBannerBtn" class="px-5 py-2.5 rounded-xl font-bold bg-white text-gray-600 border shadow-sm transition">অফার ও ব্যানার</button>
+        </div>
+
+        <!-- 1. PRODUCT MANAGEMENT SECTION -->
+        <section id="productsSection" class="space-y-6">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border">
+                <h2 id="formTitle" class="text-lg font-bold text-blue-600 mb-4"><i class="fas fa-plus-circle mr-1"></i> নতুন প্রোডাক্ট যুক্ত করুন</h2>
+                <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="editingProductId">
+                    <input type="text" id="pName" required placeholder="প্রোডাক্টের নাম *" class="border rounded-xl px-4 py-2.5 text-sm focus:border-blue-500">
+                    
+                    <select id="pCategory" required onchange="checkFoodCategory()" class="border rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 bg-white">
+                        <option value="">ক্যাটাগরি সিলেক্ট করুন *</option>
+                        <option value="Grocery">মুদি মাল (Grocery)</option>
+                        <option value="Cosmetics">কসমেটিক্স ও পোশাক (Cosmetics)</option>
+                        <option value="Electronics">ইলেকট্রনিক্স (Electronics)</option>
+                        <option value="Food">ডাইরেক্ট ফুড (Direct Food)</option>
+                    </select>
+
+                    <div id="normalPriceWrapper">
+                        <input type="number" id="pPrice" required placeholder="মূল/ডিসপ্লে মূল্য (৳) *" class="w-full border rounded-xl px-4 py-2.5 text-sm focus:border-blue-500">
+                    </div>
+
+                    <!-- ফুডের জন্য আলাদা ৩টি প্রাইসের বক্স -->
+                    <div id="foodPricesDiv" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-3 bg-blue-50 p-3 rounded-xl border border-blue-200">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-700 mb-1">ফুলের প্রাইস (Full ৳ - ঐচ্ছিক)</label>
+                            <input type="number" id="pPriceFull" placeholder="প্রয়োজন না হলে ফাঁকা রাখুন" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-700 mb-1">হাফের প্রাইস (Half ৳ - ঐচ্ছিক)</label>
+                            <input type="number" id="pPriceHalf" placeholder="প্রয়োজন না হলে ফাঁকা রাখুন" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-700 mb-1">পিসের প্রাইস (Piece ৳ - ঐচ্ছিক)</label>
+                            <input type="number" id="pPricePiece" placeholder="যেমন: ১৪০" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                        </div>
+                    </div>
+
+                    <input type="number" id="pOldPrice" placeholder="পুরোনো মূল্য (যদি ডিসকাউন্ট হয়)" class="border rounded-xl px-4 py-2.5 text-sm focus:border-blue-500">
+                    <input type="url" id="pImage" required placeholder="প্রোডাক্ট ছবির লিংক (ImgBB লিংক) *" class="border rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 md:col-span-2">
+                    
+                    <div class="flex items-center gap-3 md:col-span-2">
+                        <input type="checkbox" id="pInStock" checked class="w-5 h-5 text-blue-600 rounded">
+                        <label for="pInStock" class="font-bold text-sm">স্টকে আছে (In Stock)</label>
+                    </div>
+                    
+                    <div class="md:col-span-2 flex gap-3">
+                        <button type="submit" id="saveProductBtn" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-md">প্রোডাক্ট সেভ করুন</button>
+                        <button type="button" id="cancelEditBtn" onclick="resetProductForm()" class="hidden bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-bold">বাতিল</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Product List Grid -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border">
+                <h2 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-boxes mr-1"></i> সব প্রোডাক্ট তালিকা</h2>
+                <div id="adminProductsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <p class="text-center text-gray-500 py-6 col-span-full">লোড হচ্ছে...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ORDERS MANAGEMENT SECTION -->
+        <section id="ordersSection" class="hidden-modal space-y-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-800"><i class="fas fa-shopping-bag mr-1"></i> কাস্টমার অর্ডার লিস্ট</h2>
+                <button onclick="loadAdminOrders()" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-bold border hover:bg-blue-100"><i class="fas fa-sync-alt"></i> রিফ্রেশ</button>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[750px]">
+                    <thead>
+                        <tr class="border-b bg-gray-50 text-gray-600 text-sm">
+                            <th class="p-3">প্রোডাক্ট ও মাপ/সাইজ</th>
+                            <th class="p-3">কাস্টমার তথ্য</th>
+                            <th class="p-3">ঠিকানা</th>
+                            <th class="p-3">টাকা</th>
+                            <th class="p-3">স্ট্যাটাস (পরিবর্তন করুন)</th>
+                            <th class="p-3 text-center">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminOrdersTable" class="divide-y text-sm">
+                        <tr><td colspan="6" class="text-center py-6 text-gray-500">অর্ডার লোড হচ্ছে...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. BANNER & OFFER MANAGEMENT SECTION -->
+        <section id="bannerSection" class="hidden-modal space-y-6">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border">
+                <h2 class="text-lg font-bold text-blue-600 mb-4"><i class="fas fa-bullhorn mr-1"></i> অফার ব্যানার ম্যানেজমেন্ট</h2>
+                
+                <div id="currentBannerBox" class="mb-6 p-4 border rounded-xl bg-gray-50 hidden">
+                    <p class="text-xs font-bold text-gray-500 mb-2">বর্তমান সক্রিয় ব্যানার:</p>
+                    <div class="relative h-40 bg-cover bg-center rounded-lg shadow-inner flex items-center justify-center" id="adminPreviewBannerImg">
+                        <div class="absolute inset-0 bg-black/40 rounded-lg"></div>
+                        <h3 id="adminPreviewBannerText" class="relative z-10 text-white text-lg font-extrabold px-4 text-center"></h3>
+                    </div>
+                    <button onclick="deleteBanner()" class="mt-3 bg-red-500 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm">
+                        <i class="fas fa-trash-alt mr-1"></i> বর্তমান ব্যানার ডিলিট করুন
+                    </button>
+                </div>
+
+                <form id="bannerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">ব্যানার টেক্সট / অফার শিরোনাম *</label>
+                        <input type="text" id="bannerText" required placeholder="যেমন: রোজার বিশেষ অফার - সব পণ্যে ছাড়!" class="w-full border rounded-xl px-4 py-2.5 text-sm focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">ব্যানার ছবির লিংক (ImgBB লিংক) *</label>
+                        <input type="url" id="bannerImageUrl" required placeholder="https://i.ibb.co/..." class="w-full border rounded-xl px-4 py-2.5 text-sm focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-md">
+                        <i class="fas fa-save mr-1"></i> ব্যানার সেট বা আপডেট করুন
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg font-semibold text-sm z-50 hidden-modal">
+        <span id="toastMsg">মেসেজ</span>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyATb9iSNj0IKGiyNJvAIRZf2qwdeL6AvMw",
+          authDomain: "test-93b32.firebaseapp.com",
+          projectId: "test-93b32",
+          storageBucket: "test-93b32.firebasestorage.app",
+          messagingSenderId: "712531589314",
+          appId: "1:712531589314:web:10f52459acce159d92e35b",
+          measurementId: "G-9XDH6Q09T0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.showToast = (msg) => {
+            const toast = document.getElementById("toast");
+            document.getElementById("toastMsg").innerText = msg;
+            toast.classList.remove("hidden-modal");
+            setTimeout(() => toast.classList.add("hidden-modal"), 3000);
+        };
+
+        window.switchTab = (tab) => {
+            ['products', 'orders', 'banner'].forEach(t => {
+                document.getElementById(`${t}Section`).classList.add('hidden-modal');
+                document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`).className = "px-5 py-2.5 rounded-xl font-bold bg-white text-gray-600 border shadow-sm transition";
+            });
+            document.getElementById(`${tab}Section`).classList.remove('hidden-modal');
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}Btn`).className = "px-5 py-2.5 rounded-xl font-bold bg-blue-600 text-white shadow-sm transition";
+            if(tab === 'orders') loadAdminOrders();
+            if(tab === 'banner') loadBannerAdmin();
+        };
+
+        window.checkFoodCategory = () => {
+            const cat = document.getElementById("pCategory").value;
+            const foodDiv = document.getElementById("foodPricesDiv");
+
+            if (cat === "Food") {
+                foodDiv.classList.remove("hidden");
+            } else {
+                foodDiv.classList.add("hidden");
+            }
+        };
+
+        // --- PRODUCTS LOGIC ---
+        let loadedProductsMap = {};
+
+        async function loadAdminProducts() {
+            try {
+                const snap = await getDocs(collection(db, "products"));
+                const grid = document.getElementById("adminProductsGrid");
+                grid.innerHTML = "";
+                loadedProductsMap = {};
+                
+                if(snap.empty) {
+                    grid.innerHTML = `<p class="col-span-full text-center py-6 text-gray-500">কোনো প্রোডাক্ট নেই।</p>`;
+                    return;
+                }
+
+                snap.forEach(documentItem => {
+                    const p = documentItem.data();
+                    const id = documentItem.id;
+                    loadedProductsMap[id] = p;
+
+                    const escapedName = (p.name || '').replace(/'/g, "\\'");
+                    const escapedCat = (p.category || '').replace(/'/g, "\\'");
+                    const escapedImg = (p.imageUrl || '').replace(/'/g, "\\'");
+                    const foodPricesStr = p.foodPrices ? encodeURIComponent(JSON.stringify(p.foodPrices)) : '';
+
+                    grid.innerHTML += `
+                        <div class="border rounded-xl p-3 flex gap-3 bg-gray-50 relative items-center">
+                            <img src="${p.imageUrl}" class="w-16 h-16 object-cover rounded-lg border shrink-0">
+                            <div class="flex-1 pr-14">
+                                <h4 class="font-bold text-sm text-gray-800 line-clamp-1">${p.name}</h4>
+                                <p class="text-xs text-blue-600 font-bold">৳${p.price} | <span class="${p.inStock ? 'text-green-600' : 'text-red-500'}">${p.inStock ? 'In Stock' : 'Out'}</span></p>
+                            </div>
+                            <div class="absolute top-2 right-2 flex flex-col gap-1">
+                                <button type="button" onclick="editProduct('${id}', '${escapedName}', '${escapedCat}', '${p.price}', '${p.oldPrice || ''}', '${escapedImg}', ${Boolean(p.inStock)}, '${foodPricesStr}')" class="bg-blue-100 text-blue-600 w-7 h-7 rounded-lg text-xs hover:bg-blue-200"><i class="fas fa-edit"></i></button>
+                                <button type="button" onclick="deleteProduct('${id}')" class="bg-red-100 text-red-600 w-7 h-7 rounded-lg text-xs hover:bg-red-200"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById("productForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById("editingProductId").value;
+            const category = document.getElementById("pCategory").value;
+
+            const pData = {
+                name: document.getElementById("pName").value,
+                category: category,
+                price: Number(document.getElementById("pPrice").value) || 0,
+                oldPrice: Number(document.getElementById("pOldPrice").value) || 0,
+                imageUrl: document.getElementById("pImage").value,
+                inStock: document.getElementById("pInStock").checked
+            };
+
+            // ফুড ক্যাটাগরির লজিক সমাধান করা হয়েছে: ফাঁকা রাখলে ০ থাকবে, অটোমেটিক মূল দাম ঢুকবে না
+            if (category === "Food") {
+                const fullVal = document.getElementById("pPriceFull").value;
+                const halfVal = document.getElementById("pPriceHalf").value;
+                const pieceVal = document.getElementById("pPricePiece").value;
+
+                pData.foodPrices = {
+                    full: fullVal !== "" ? Number(fullVal) : 0,
+                    half: halfVal !== "" ? Number(halfVal) : 0,
+                    piece: pieceVal !== "" ? Number(pieceVal) : 0
+                };
+            } else {
+                pData.foodPrices = null;
+            }
+
+            try {
+                if(editId) {
+                    await updateDoc(doc(db, "products", editId), pData);
+                    showToast("প্রোডাক্ট আপডেট সফল হয়েছে!");
+                } else {
+                    await addDoc(collection(db, "products"), pData);
+                    showToast("নতুন প্রোডাক্ট যোগ হয়েছে!");
+                }
+                resetProductForm();
+                loadAdminProducts();
+            } catch(err) {
+                showToast("সমস্যা হয়েছে!");
+            }
+        });
+
+        window.editProduct = (id, name, cat, price, oldPrice, img, inStock, foodPricesStr) => {
+            document.getElementById("editingProductId").value = id;
+            document.getElementById("pName").value = name;
+            document.getElementById("pCategory").value = cat;
+            document.getElementById("pPrice").value = price;
+            document.getElementById("pOldPrice").value = oldPrice;
+            document.getElementById("pImage").value = img;
+            document.getElementById("pInStock").checked = (inStock === true || inStock === 'true');
+            
+            checkFoodCategory();
+
+            if (cat === "Food" && foodPricesStr) {
+                try {
+                    let fPrices = JSON.parse(decodeURIComponent(foodPricesStr));
+                    document.getElementById("pPriceFull").value = fPrices.full ? fPrices.full : '';
+                    document.getElementById("pPriceHalf").value = fPrices.half ? fPrices.half : '';
+                    document.getElementById("pPricePiece").value = fPrices.piece ? fPrices.piece : '';
+                } catch(e) {}
+            }
+
+            document.getElementById("formTitle").innerHTML = `<i class="fas fa-edit mr-1"></i> প্রোডাক্ট এডিট করুন`;
+            document.getElementById("saveProductBtn").innerText = "আপডেট করুন";
+            document.getElementById("cancelEditBtn").classList.remove("hidden");
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        };
+
+        window.resetProductForm = () => {
+            document.getElementById("productForm").reset();
+            document.getElementById("editingProductId").value = "";
+            document.getElementById("pInStock").checked = true;
+            checkFoodCategory();
+            document.getElementById("formTitle").innerHTML = `<i class="fas fa-plus-circle mr-1"></i> নতুন প্রোডাক্ট যুক্ত করুন`;
+            document.getElementById("saveProductBtn").innerText = "প্রোডাক্ট সেভ করুন";
+            document.getElementById("cancelEditBtn").classList.add("hidden");
+        };
+
+        window.deleteProduct = async (id) => {
+            if(confirm("প্রোডাক্টটি ডিলিট করতে চান?")) {
+                await deleteDoc(doc(db, "products", id));
+                showToast("প্রোডাক্ট ডিলিট করা হয়েছে");
+                loadAdminProducts();
+            }
+        };
+
+        // --- ORDERS LOGIC ---
+        async function loadAdminOrders() {
+            try {
+                const snap = await getDocs(collection(db, "orders"));
+                const tbody = document.getElementById("adminOrdersTable");
+                tbody.innerHTML = "";
+                
+                if(snap.empty) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500">কোনো অর্ডার নেই।</td></tr>`;
+                    return;
+                }
+                
+                snap.forEach(documentItem => {
+                    const order = documentItem.data();
+                    const id = documentItem.id;
+                    const isPending = order.status === "Pending" || !order.status;
+                    const statusText = isPending ? "Pending" : "Delivered";
+                    const statusColor = isPending ? "bg-orange-100 text-orange-700 border-orange-300" : "bg-green-100 text-green-700 border-green-300";
+                    
+                    let detailsHTML = "";
+                    if (order.customDetails) {
+                        detailsHTML = `<p class="text-xs text-indigo-700 font-extrabold mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 inline-block"><i class="fas fa-ruler-combined mr-1"></i>${order.customDetails}</p>`;
+                    }
+                    const areaText = order.deliveryArea ? ` (${order.deliveryArea})` : "";
+                    
+                    tbody.innerHTML += `
+                        <tr class="border-b hover:bg-gray-50/50 transition">
+                            <td class="p-3 flex items-start gap-2.5">
+                                <img src="${order.productImage || 'https://via.placeholder.com/40'}" class="w-11 h-11 object-cover rounded-lg border shrink-0 mt-0.5">
+                                <div>
+                                    <p class="font-bold text-gray-800 line-clamp-1">${order.productName}</p>
+                                    ${detailsHTML}
+                                </div>
+                            </td>
+                            <td class="p-3">
+                                <p class="font-bold text-gray-900">${order.customerName}</p>
+                                <p class="text-xs text-gray-500"><i class="fas fa-phone-alt mr-1"></i>${order.customerPhone}</p>
+                            </td>
+                            <td class="p-3 text-xs text-gray-600 max-w-[160px]" title="${order.customerAddress || ''}">
+                                ${order.customerAddress || 'দেওয়া হয়নি'}
+                                <p class="text-[10px] text-gray-400 mt-0.5">ডেলিভারি চার্জ: ৳${order.deliveryFee || 50}${areaText}</p>
+                            </td>
+                            <td class="p-3 font-extrabold text-blue-600 text-base">৳${order.totalAmount}</td>
+                            <td class="p-3">
+                                <button type="button" onclick="toggleOrderStatus('${id}', '${statusText}')" class="px-3 py-1.5 rounded-lg text-xs font-bold border ${statusColor} shadow-sm hover:opacity-80 transition cursor-pointer flex items-center gap-1.5 w-max">
+                                    <i class="fas ${isPending ? 'fa-clock text-orange-500' : 'fa-check-circle text-green-600'}"></i>
+                                    <span>${statusText}</span>
+                                </button>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button type="button" onclick="deleteOrder('${id}')" class="bg-red-50 text-red-500 hover:bg-red-100 p-2 rounded-lg text-xs transition" title="অর্ডার ডিলিট করুন">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        window.toggleOrderStatus = async (id, currentStatus) => {
+            const newStatus = (currentStatus === "Pending") ? "Delivered" : "Pending";
+            try {
+                await updateDoc(doc(db, "orders", id), { status: newStatus });
+                showToast(`স্ট্যাটাস পরিবর্তন করে '${newStatus}' করা হয়েছে!`);
+                loadAdminOrders();
+            } catch(err) {
+                showToast("স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে!");
+            }
+        };
+
+        window.deleteOrder = async (id) => {
+            if(confirm("আপনি কি নিশ্চিতভাবে এই অর্ডারটি ডিলিট করতে চান?")) {
+                await deleteDoc(doc(db, "orders", id));
+                showToast("অর্ডার ডিলিট করা হয়েছে");
+                loadAdminOrders();
+            }
+        };
+
+        // --- BANNER & OFFER LOGIC ---
+        async function loadBannerAdmin() {
+            try {
+                const snap = await getDocs(collection(db, "offers"));
+                const bannerBox = document.getElementById("currentBannerBox");
+                if (!snap.empty) {
+                    const bannerDoc = snap.docs[0];
+                    const bannerData = bannerDoc.data();
+                    document.getElementById("adminPreviewBannerImg").style.backgroundImage = `url('${bannerData.imageUrl}')`;
+                    document.getElementById("adminPreviewBannerText").innerText = bannerData.text;
+                    document.getElementById("bannerText").value = bannerData.text;
+                    document.getElementById("bannerImageUrl").value = bannerData.imageUrl;
+                    bannerBox.classList.remove("hidden");
+                } else {
+                    bannerBox.classList.add("hidden");
+                    document.getElementById("bannerForm").reset();
+                }
+            } catch (e) {}
+        }
+
+        document.getElementById("bannerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const text = document.getElementById("bannerText").value;
+            const imageUrl = document.getElementById("bannerImageUrl").value;
+            try {
+                const snap = await getDocs(collection(db, "offers"));
+                if (!snap.empty) {
+                    await updateDoc(doc(db, "offers", snap.docs[0].id), { text, imageUrl });
+                } else {
+                    await addDoc(collection(db, "offers"), { text, imageUrl });
+                }
+                showToast("ব্যানার সফলভাবে সেভ হয়েছে!");
+                loadBannerAdmin();
+            } catch (e) {
+                showToast("ব্যানার সেভ করতে সমস্যা হয়েছে!");
+            }
+        });
+
+        window.deleteBanner = async () => {
+            if(confirm("আপনি কি নিশ্চিতভাবে এই ব্যানারটি ডিলিট করতে চান?")) {
+                try {
+                    const snap = await getDocs(collection(db, "offers"));
+                    if (!snap.empty) {
+                        await deleteDoc(doc(db, "offers", snap.docs[0].id));
+                        showToast("ব্যানার সফলভাবে ডিলিট করা হয়েছে!");
+                        document.getElementById("bannerForm").reset();
+                        document.getElementById("currentBannerBox").classList.add("hidden");
+                    }
+                } catch (e) {
+                    showToast("ডিলিট করতে সমস্যা হয়েছে!");
+                }
+            }
+        };
+
+        window.logoutAdmin = () => {
+            localStorage.removeItem("isAdminLoggedIn");
+            window.location.href = "admin-login.html";
+        };
+
+        loadAdminProducts();
+    </script>
+</body>
+</html>
